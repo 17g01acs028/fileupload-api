@@ -30,7 +30,7 @@ const s3 = new AWS.S3()
 const upload = multer({
   storage: multerS3({
     s3: s3,
-    bucket: 'cyclic-cute-tan-indri-hose-eu-central-1',
+    bucket: env.process.BUCKET,
     key: function (req, file, cb) {
       cb(null, 'uploads/' + file.originalname);
     },
