@@ -54,6 +54,26 @@ app.post('/upload', upload.array('certificates'), (req, res) => {
     });
 });
 
+app.get('/api/questions/response/download/:filename', (req, res) => {
+  const fileName = req.params.filename;
+
+  // Parameters for downloading file from S3
+  const params = {
+    Bucket: 'process.env.BUCKET',
+    Key: fileName // File name in S3
+  };
+
+  // Get object from S3
+  s3.getObject(params, (err, data) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`); // Forces the browser to download the file
+      res.send(data.Body);
+    }
+  });
+});
+
 
 const PORT = process.env.PORT || 6000;
 app.listen(PORT, () => {
