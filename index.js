@@ -59,7 +59,7 @@ app.get('/api/questions/response/download/:filename', (req, res) => {
 
   // Parameters for downloading file from S3
   const params = {
-    Bucket: 'process.env.BUCKET',
+    Bucket: process.env.BUCKET,
     Key: fileName // File name in S3
   };
 
