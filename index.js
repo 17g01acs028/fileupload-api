@@ -27,22 +27,33 @@ app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
 
 /* file upload to aws */
 const s3 = new AWS.S3()
-const upload = multer({
-  storage: multerS3({
-    s3: s3,
-    bucket: process.env.BUCKET,
-    key: function (req, file, cb) {
-      cb(null, 'uploads/' + file.originalname);
-    },
-  }),
+const upload = multer();
+
+
+
+app.post('/upload', upload.array('certificates'), (req, res) => {
+  const files = req.files;
+
+  const uploadPromises = files.map(file => {
+    // Parameters for uploading file to S3
+    const params = {
+      Bucket: process.env.BUCKET,
+      Key: file.originalname, // File name in S3
+      Body: file.buffer // Actual file content
+    };
+
+    return s3.upload(params).promise();
+  });
+
+  Promise.all(uploadPromises)
+    .then(data => {
+      res.json({ message: 'Files uploaded successfully', data });
+    })
+    .catch(err => {
+      res.status(500).json({ error: err.message });
+    });
 });
 
-
-
-app.post('/upload', upload.single('file'), (req, res) => {
-  // Logic to handle successful upload, respond to the client, etc.
-  res.status(200).send('File uploaded successfully!');
-});
 
 const PORT = process.env.PORT || 6000;
 app.listen(PORT, () => {
